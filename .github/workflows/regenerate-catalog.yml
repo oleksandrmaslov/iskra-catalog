@@ -9,7 +9,7 @@
 #   CATALOG_PRIV_KEY   base64 of the Ed25519 private key bytes (the contents
 #                      of catalog-key.priv). The matching public key must
 #                      already be embedded in CatalogTrust.EmbeddedPublicKeyBase64
-#                      in oleksandrmaslov/iskra-app.
+#                      in oleksandrmaslov/iskra.
 #
 # To populate:
 #   cat ~/.claude/projects/.../catalog-key.priv | gh secret set CATALOG_PRIV_KEY \
@@ -43,16 +43,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Checkout iskra-app (for Iskra.Cli source)
-        uses: actions/checkout@v4
-        with:
-          repository: oleksandrmaslov/iskra-app
-          ref: ${{ env.ISKRA_APP_REF }}
-          path: iskra-app
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch "$ISKRA_APP_REF" \
+            https://github.com/oleksandrmaslov/iskra.git iskra-app
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Restore Iskra.Cli
+        run: dotnet restore iskra-app/src/Iskra.Cli/Iskra.Cli.csproj
 
       - name: List *-firmware repos under ${{ env.OWNER }}
         id: list_repos
