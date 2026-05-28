@@ -18,8 +18,9 @@
 # Also recommended:
 #   ISKRA_BOT_TOKEN    A GitHub PAT (or use the default GITHUB_TOKEN if all
 #                      firmware repos are public). Used to list & download
-#                      target.json from each firmware repo. Defaults to
-#                      GITHUB_TOKEN which has cross-repo read on public repos.
+#                      target.json from each firmware repo. Required when
+#                      firmware repos are private. Defaults to GITHUB_TOKEN
+#                      for public repos.
 
 name: regenerate catalog
 
@@ -68,6 +69,10 @@ jobs:
               > repos.txt
           echo "Found $(wc -l < repos.txt) firmware repo(s):"
           cat repos.txt
+          if [ ! -s repos.txt ]; then
+            echo "::error::No *-firmware repos visible. If firmware repos are private, set ISKRA_BOT_TOKEN in iskra-catalog with read access to those repos." >&2
+            exit 2
+          fi
 
       - name: Pull target.json from each firmware repo's latest release
         env:
@@ -95,6 +100,10 @@ jobs:
           done < repos.txt
           echo "Staged target.json files:"
           find targets -name target.json -print
+          if ! find targets -name target.json -print -quit | grep -q .; then
+            echo "::error::No target.json files found. Check firmware releases and token access to private firmware repos." >&2
+            exit 2
+          fi
 
       - name: Generate catalog.json
         run: |
