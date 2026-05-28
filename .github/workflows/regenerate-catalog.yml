@@ -54,6 +54,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Restore Iskra.Cli
+        run: dotnet restore iskra-app/src/Iskra.Cli/Iskra.Cli.csproj
+
       - name: List *-firmware repos under ${{ env.OWNER }}
         id: list_repos
         env:
