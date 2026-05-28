@@ -60,9 +60,11 @@ jobs:
       - name: List *-firmware repos under ${{ env.OWNER }}
         id: list_repos
         env:
-          GH_TOKEN: ${{ secrets.ISKRA_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          ISKRA_BOT_TOKEN: ${{ secrets.ISKRA_BOT_TOKEN }}
+          FALLBACK_GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          export GH_TOKEN="$(printf '%s' "${ISKRA_BOT_TOKEN:-$FALLBACK_GITHUB_TOKEN}" | tr -d '[:space:]')"
           gh repo list "$OWNER" --limit 200 \
               --json name,isArchived,visibility \
               --jq '.[] | select(.isArchived == false) | select(.name | endswith("-firmware")) | .name' \
@@ -76,9 +78,11 @@ jobs:
 
       - name: Pull target.json from each firmware repo's latest release
         env:
-          GH_TOKEN: ${{ secrets.ISKRA_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          ISKRA_BOT_TOKEN: ${{ secrets.ISKRA_BOT_TOKEN }}
+          FALLBACK_GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          export GH_TOKEN="$(printf '%s' "${ISKRA_BOT_TOKEN:-$FALLBACK_GITHUB_TOKEN}" | tr -d '[:space:]')"
           mkdir -p targets
           while IFS= read -r repo; do
             [ -z "$repo" ] && continue
