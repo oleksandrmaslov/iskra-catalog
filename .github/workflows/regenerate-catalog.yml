@@ -33,7 +33,7 @@ permissions:
 
 env:
   OWNER: oleksandrmaslov
-  DIST_REPO: oleksandrmaslov/iskra-firmware
+  DIST_REPO: Energy-for-Ukraine/iskra-firmware
   ISKRA_APP_REF: main        # branch/tag of iskra-app to use the generator from
 
 jobs:
