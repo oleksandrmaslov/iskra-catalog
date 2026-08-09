@@ -58,17 +58,29 @@ jobs:
       - name: Restore Iskra.Cli
         run: dotnet restore iskra-app/src/Iskra.Cli/Iskra.Cli.csproj
 
-      - name: List *-firmware repos under ${{ env.OWNER }}
-        id: list_repos
-        env:
-          GH_TOKEN: ${{ secrets.ISKRA_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+      - name: Validate firmware repository allowlist
         run: |
           set -euo pipefail
-          gh repo list "$OWNER" --limit 200 \
-              --json name,isArchived,visibility \
-              --jq '.[] | select(.isArchived == false) | select(.name | endswith("-firmware")) | .name' \
-              > repos.txt
-          echo "Found $(wc -l < repos.txt) firmware repo(s):"
+          # Explicit allowlist, not a name glob. A glob on "*-firmware" also
+          # matches the distribution repo itself (iskra-firmware), which would
+          # feed generated artefacts back into catalog generation the moment
+          # OWNER and the distribution repo share an account. Widening trust
+          # must be a reviewed edit to this file, never a side effect of
+          # creating a repository.
+          if [ ! -f firmware-repos.txt ]; then
+            echo "::error::firmware-repos.txt is required (one approved repo name per line)" >&2
+            exit 1
+          fi
+          sed -e 's/#.*$//' -e '/^[[:space:]]*$/d' firmware-repos.txt             | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'             | sort -u > repos.txt
+          if [ ! -s repos.txt ]; then
+            echo "::error::firmware-repos.txt contains no repositories" >&2
+            exit 1
+          fi
+          if grep -Ev '^[A-Za-z0-9._-]+-firmware$' repos.txt; then
+            echo "::error::invalid repository name in firmware-repos.txt" >&2
+            exit 1
+          fi
+          echo "Approved firmware repositories:"
           cat repos.txt
 
       - name: Pull target.json from each firmware repo's latest release
