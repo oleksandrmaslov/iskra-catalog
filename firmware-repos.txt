@@ -1,0 +1,13 @@
+# Explicitly approved firmware source repositories, one name per line.
+#
+# The catalog signing workflow reads target.json ONLY from releases in these
+# repositories. Adding a line widens what the signed catalog will trust, so
+# review this file the same way you would review the signing key.
+#
+# Do NOT list the distribution repo (iskra-firmware). It holds copies of the
+# artefacts this workflow produces; enumerating it would feed generated output
+# back into generation.
+#
+# Names are resolved under the OWNER set in regenerate-catalog.yml.
+ci-clop-firmware
+venovisor-firmware
