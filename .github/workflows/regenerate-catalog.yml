@@ -33,6 +33,7 @@ permissions:
 
 env:
   OWNER: oleksandrmaslov
+  DIST_REPO: oleksandrmaslov/iskra-firmware
   ISKRA_APP_REF: main        # branch/tag of iskra-app to use the generator from
 
 jobs:
@@ -100,11 +101,16 @@ jobs:
       - name: Generate catalog.json
         run: |
           set -euo pipefail
+          # Point every elf_source at the distribution repo instead of at
+          # the per-product source repos. Operators are granted read on
+          # $DIST_REPO only, so a catalog naming source repos would send
+          # them somewhere they cannot read and defeat the separation.
           dotnet run --project iskra-app/src/Iskra.Cli --no-restore \
             -- --generate-catalog \
                --from-targets targets \
                --out catalog.json \
-               --owner "$OWNER"
+               --owner "$OWNER" \
+               --dist-repo "$DIST_REPO"
           ls -la catalog.json
           cat catalog.json | head -50
 
