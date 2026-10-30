@@ -11,3 +11,4 @@
 # Names are resolved under the OWNER set in regenerate-catalog.yml.
 ci-clop-firmware
 venovisor-firmware
+ampel-firmware
